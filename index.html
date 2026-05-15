@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>風の杜 タロット</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;600&family=Shippori+Mincho:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #2c2416;
+    --parchment: #f5f0e8;
+    --sage: #7a8c6e;
+    --gold: #b8965a;
+    --gold-light: #d4b07a;
+    --cream: #ede8dc;
+    --mist: #c8cfc0;
+    --deep: #1a1a12;
+    --card-back: #3d4a35;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--parchment);
+    color: var(--ink);
+    font-family: 'Noto Serif JP', serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* 和紙テクスチャ背景 */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(ellipse at 20% 10%, rgba(184,150,90,0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 90%, rgba(122,140,110,0.08) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 0 20px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ヘッダー */
+  header {
+    text-align: center;
+    padding: 40px 0 24px;
+  }
+
+  .brand {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 13px;
+    letter-spacing: 0.4em;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+
+  .title {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    color: var(--ink);
+    line-height: 1.4;
+  }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 16px 0;
+  }
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold), transparent);
+  }
+  .divider span {
+    color: var(--gold);
+    font-size: 14px;
+  }
+
+  .subtitle {
+    font-size: 13px;
+    color: #4a5e40;
+    letter-spacing: 0.15em;
+    line-height: 1.8;
+  }
+
+  /* ── SCREEN 1: SHUFFLE ── */
+  #screen-shuffle {
+    padding: 20px 0 40px;
+  }
+
+  .shuffle-area {
+    background: var(--cream);
+    border: 1px solid rgba(184,150,90,0.3);
+    border-radius: 4px;
+    padding: 32px 20px;
+    text-align: center;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .shuffle-area::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 20px,
+      rgba(184,150,90,0.03) 20px,
+      rgba(184,150,90,0.03) 21px
+    );
+  }
+
+  .deck-visual {
+    position: relative;
+    width: 100px;
+    height: 140px;
+    margin: 0 auto 24px;
+    cursor: pointer;
+  }
+
+  .deck-card {
+    position: absolute;
+    width: 90px;
+    height: 130px;
+    background: var(--card-back);
+    border-radius: 6px;
+    border: 2px solid var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+
+  .deck-card::after {
+    content: '✦';
+    color: var(--gold);
+    font-size: 20px;
+    opacity: 0.6;
+  }
+
+  .deck-card:nth-child(1) { transform: translate(-4px, -4px) rotate(-3deg); }
+  .deck-card:nth-child(2) { transform: translate(-2px, -2px) rotate(-1deg); }
+  .deck-card:nth-child(3) { transform: translate(0, 0); }
+  .deck-card:nth-child(4) { transform: translate(2px, 2px) rotate(1deg); }
+  .deck-card:nth-child(5) { transform: translate(4px, 4px) rotate(3deg); }
+
+  .deck-visual:hover .deck-card:nth-child(1) { transform: translate(-12px, -8px) rotate(-6deg); }
+  .deck-visual:hover .deck-card:nth-child(2) { transform: translate(-6px, -4px) rotate(-3deg); }
+  .deck-visual:hover .deck-card:nth-child(3) { transform: translate(0, 0); }
+  .deck-visual:hover .deck-card:nth-child(4) { transform: translate(6px, 4px) rotate(3deg); }
+  .deck-visual:hover .deck-card:nth-child(5) { transform: translate(12px, 8px) rotate(6deg); }
+
+  .deck-visual.shuffling .deck-card {
+    animation: shuffle-anim 0.6s ease-in-out infinite alternate;
+  }
+  .deck-visual.shuffling .deck-card:nth-child(1) { animation-delay: 0s; }
+  .deck-visual.shuffling .deck-card:nth-child(2) { animation-delay: 0.1s; }
+  .deck-visual.shuffling .deck-card:nth-child(3) { animation-delay: 0.2s; }
+  .deck-visual.shuffling .deck-card:nth-child(4) { animation-delay: 0.3s; }
+  .deck-visual.shuffling .deck-card:nth-child(5) { animation-delay: 0.4s; }
+
+  @keyframes shuffle-anim {
+    0% { transform: translateX(-15px) rotate(-5deg); }
+    100% { transform: translateX(15px) rotate(5deg); }
+  }
+
+  .shuffle-instruction {
+    font-size: 13px;
+    color: #4a5e40;
+    letter-spacing: 0.1em;
+    line-height: 1.8;
+    position: relative;
+    z-index: 1;
+    margin-bottom: 8px;
+  }
+
+  .shuffle-btn {
+    background: none;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    padding: 12px 32px;
+    font-family: 'Shippori Mincho', serif;
+    font-size: 14px;
+    letter-spacing: 0.3em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 16px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .shuffle-btn:hover {
+    background: var(--gold);
+    color: var(--parchment);
+  }
+
+  .shuffle-btn:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  /* ── SCREEN 2: SPREAD ── */
+  #screen-spread {
+    padding: 20px 0 40px;
+    display: none;
+  }
+
+  .spread-instruction {
+    text-align: center;
+    font-size: 13px;
+    color: #4a5e40;
+    letter-spacing: 0.1em;
+    margin-bottom: 24px;
+    line-height: 1.8;
+  }
+
+  .cards-fan {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    padding: 20px 0;
+  }
+
+  .fan-card {
+    width: 52px;
+    height: 80px;
+    background: var(--card-back);
+    border-radius: 4px;
+    border: 1px solid var(--gold);
+    cursor: pointer;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    flex-shrink: 0;
+  }
+
+  .fan-card::after {
+    content: '✦';
+    color: var(--gold);
+    font-size: 10px;
+    opacity: 0.5;
+  }
+
+  .fan-card:hover {
+    transform: translateY(-8px) scale(1.05);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    border-color: var(--gold-light);
+  }
+
+  .fan-card.selected {
+    opacity: 0.3;
+    pointer-events: none;
+    transform: none;
+  }
+
+  /* ── SCREEN 3: RESULT ── */
+  #screen-result {
+    padding: 20px 0 40px;
+    display: none;
+  }
+
+  .result-card-area {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .result-card-wrap {
+    display: inline-block;
+    perspective: 800px;
+    margin-bottom: 20px;
+  }
+
+  .result-card-inner {
+    width: 160px;
+    height: 240px;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.8s ease;
+  }
+
+  .result-card-inner.flipped {
+    transform: rotateY(180deg);
+  }
+
+  .result-card-front, .result-card-back {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+
+  .result-card-back {
+    background: var(--card-back);
+    border: 2px solid var(--gold);
+  }
+
+  .result-card-back::after {
+    content: '✦';
+    color: var(--gold);
+    font-size: 32px;
+    opacity: 0.6;
+  }
+
+  .result-card-front {
+    background: var(--cream);
+    border: 2px solid var(--gold);
+    transform: rotateY(180deg);
+    flex-direction: column;
+    gap: 0;
+    overflow: hidden;
+    padding: 12px 8px;
+  }
+
+  .card-symbol {
+    font-size: 48px;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .card-roman {
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--gold);
+    font-family: 'Shippori Mincho', serif;
+  }
+
+  .card-name-ja {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    color: var(--ink);
+    margin-top: 4px;
+  }
+
+  .card-name-en {
+    font-size: 9px;
+    color: var(--sage);
+    letter-spacing: 0.2em;
+    margin-top: 2px;
+  }
+
+  /* 解説エリア */
+  .card-reading {
+    background: var(--cream);
+    border: 1px solid rgba(184,150,90,0.3);
+    padding: 24px 20px;
+    position: relative;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.6s ease 0.9s;
+  }
+
+  .card-reading.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .reading-label {
+    font-size: 10px;
+    letter-spacing: 0.4em;
+    color: var(--gold);
+    margin-bottom: 12px;
+    font-family: 'Shippori Mincho', serif;
+  }
+
+  .reading-keyword {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: 0.2em;
+    margin-bottom: 16px;
+    line-height: 1.6;
+  }
+
+  .reading-text {
+    font-size: 13px;
+    line-height: 2;
+    color: #1e1a14;
+    border-top: 1px solid rgba(184,150,90,0.2);
+    padding-top: 14px;
+  }
+
+  .reading-advice {
+    margin-top: 14px;
+    padding: 12px;
+    background: rgba(122,140,110,0.1);
+    font-size: 12px;
+    line-height: 1.9;
+    color: #3d5032;
+    font-style: italic;
+    letter-spacing: 0.05em;
+  }
+
+  .again-btn {
+    display: block;
+    width: 100%;
+    background: none;
+    border: 1px solid var(--ink);
+    color: var(--ink);
+    padding: 14px;
+    font-family: 'Shippori Mincho', serif;
+    font-size: 13px;
+    letter-spacing: 0.3em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 24px;
+    opacity: 0;
+    transition: all 0.4s ease 1.6s;
+  }
+
+  .again-btn.visible {
+    opacity: 1;
+  }
+
+  .again-btn:hover {
+    background: var(--ink);
+    color: var(--parchment);
+  }
+
+  /* 装飾 */
+  .ornament {
+    text-align: center;
+    color: var(--gold);
+    font-size: 18px;
+    opacity: 0.4;
+    margin: 8px 0;
+    letter-spacing: 8px;
+  }
+
+  /* フェードイン */
+  .fade-in {
+    animation: fadeIn 0.6s ease forwards;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* シャッフル済みメッセージ */
+  .shuffled-msg {
+    font-size: 12px;
+    color: var(--gold);
+    letter-spacing: 0.2em;
+    text-align: center;
+    margin-top: 8px;
+    height: 20px;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <header>
+    <div class="brand">風の杜 ✦ kaze no mori</div>
+    <h1 class="title">今日の一枚</h1>
+    <div class="divider"><span>✦</span></div>
+    <p class="subtitle">静かに心を整え<br>カードに問いかけてください</p>
+  </header>
+
+  <!-- SCREEN 1: シャッフル -->
+  <div id="screen-shuffle">
+    <div class="shuffle-area">
+      <div class="deck-visual" id="deckVisual" onclick="startShuffle()">
+        <div class="deck-card"></div>
+        <div class="deck-card"></div>
+        <div class="deck-card"></div>
+        <div class="deck-card"></div>
+        <div class="deck-card"></div>
+      </div>
+      <p class="shuffle-instruction">今日、あなたに伝えたいことは何ですか<br>デッキに手を触れて、問いを胸に抱いてください</p>
+      <button class="shuffle-btn" id="shuffleBtn" onclick="startShuffle()">カードをシャッフルする</button>
+      <p class="shuffled-msg" id="shuffledMsg"></p>
+    </div>
+    <div class="ornament">✦ · · ✦</div>
+  </div>
+
+  <!-- SCREEN 2: カード選択 -->
+  <div id="screen-spread">
+    <p class="spread-instruction">
+      カードが広がりました<br>
+      <span style="font-size:12px; color:var(--gold);">直感で一枚、手を伸ばしてください</span>
+    </p>
+    <div class="cards-fan" id="cardsFan"></div>
+  </div>
+
+  <!-- SCREEN 3: 結果 -->
+  <div id="screen-result">
+    <div class="result-card-area">
+      <div class="result-card-wrap">
+        <div class="result-card-inner" id="resultCardInner">
+          <div class="result-card-back"></div>
+          <div class="result-card-front" id="resultCardFront"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-reading" id="cardReading">
+      <div class="reading-label">✦ TODAY'S READING ✦</div>
+      <div class="reading-keyword" id="readingKeyword"></div>
+      <div class="reading-text" id="readingText"></div>
+      <div class="reading-advice" id="readingAdvice"></div>
+    </div>
+    <button class="again-btn" id="againBtn" onclick="resetAll()">もう一度 引き直す</button>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+const TAROT = [
+  {
+    id: 0, roman: "0", nameJa: "愚者", nameEn: "THE FOOL",
+    symbol: "🌬️",
+    keyword: "始まり・無限の可能性・自由な魂",
+    text: "何も持たないからこそ、何にでもなれる。今のあなたには、恐れる必要のない純粋な好奇心があります。前例や常識にとらわれず、新しい一歩を踏み出す日。失敗を恐れるより、動くことを大切にしてください。",
+    advice: "「知らないこと」は弱さではありません。それは、まっさらな心で出会える喜びです。"
+  },
+  {
+    id: 1, roman: "I", nameJa: "魔術師", nameEn: "THE MAGICIAN",
+    symbol: "✨",
+    keyword: "意志・創造力・行動する力",
+    text: "必要な道具はすでにあなたの手の中にあります。今日は「できない理由」を探すのをやめて、「どうすればできるか」に意識を向けてみてください。意志の力が、現実を動かし始める日です。",
+    advice: "集中と意図。この二つが揃えば、あなたの言葉と行動は魔法になります。"
+  },
+  {
+    id: 2, roman: "II", nameJa: "女教皇", nameEn: "THE HIGH PRIESTESS",
+    symbol: "🌙",
+    keyword: "直感・内なる知恵・静けさ",
+    text: "今日は外に答えを求めるより、静かに内側の声に耳を傾けてください。あなたの直感は正しく動いています。感じたことを信じて。焦らず、待つことも大切な選択です。",
+    advice: "月は満ち欠けしながら、ずっとそこにいます。あなたの内なる知恵も同じです。"
+  },
+  {
+    id: 3, roman: "III", nameJa: "女帝", nameEn: "THE EMPRESS",
+    symbol: "🌸",
+    keyword: "豊かさ・育む力・感性",
+    text: "今日は五感を大切にしてください。美しいものを見て、美味しいものを食べて、心地よい場所にいる。そんな豊かさの中に、新しいアイデアや縁が育まれています。",
+    advice: "種を蒔いた土地は、大切に世話をすれば必ず実を結びます。"
+  },
+  {
+    id: 4, roman: "IV", nameJa: "皇帝", nameEn: "THE EMPEROR",
+    symbol: "🏔️",
+    keyword: "安定・秩序・リーダーシップ",
+    text: "今日は「決める」ことを恐れないでください。曖昧なままにしてきたことに、明確な形を与える日です。責任を持って決断することが、周囲への信頼にもつながります。",
+    advice: "山は揺れません。あなたの芯の強さが、周囲に安心を与えます。"
+  },
+  {
+    id: 5, roman: "V", nameJa: "教皇", nameEn: "THE HIEROPHANT",
+    symbol: "🕊️",
+    keyword: "伝統・教え・つながり",
+    text: "今日は「師」や「先人の知恵」に目を向ける日です。本でも、人との会話でも、長年続いてきた習慣の中にも、今のあなたに必要な答えが隠れているかもしれません。",
+    advice: "誰かに教えることで、自分の理解が深まることがあります。"
+  },
+  {
+    id: 6, roman: "VI", nameJa: "恋人たち", nameEn: "THE LOVERS",
+    symbol: "🌿",
+    keyword: "選択・調和・誠実さ",
+    text: "今日は「本当に望んでいること」を問い直す日。誰かのためではなく、自分の心に誠実な選択をしてください。二つの道があるなら、恐れではなく愛から選んでみて。",
+    advice: "自分を大切にすることと、人を大切にすることは、矛盾しません。"
+  },
+  {
+    id: 7, roman: "VII", nameJa: "戦車", nameEn: "THE CHARIOT",
+    symbol: "⚡",
+    keyword: "前進・意志・克服",
+    text: "今日は迷いを脇に置いて、前を向いて進む日です。困難があっても、それはあなたを止めるためではなく、強くするためにあります。スピードよりも「方向」を信じて。",
+    advice: "手綱を握るのはあなた自身。感情という馬を御することで、どこへでも行けます。"
+  },
+  {
+    id: 8, roman: "VIII", nameJa: "力", nameEn: "STRENGTH",
+    symbol: "🦁",
+    keyword: "内なる強さ・優しさ・忍耐",
+    text: "今日必要な強さは、声高に叫ぶものではなく、静かで深いもの。怒りや恐れをただ押さえ込むのではなく、優しく受け入れることが、本当の力になります。",
+    advice: "あなたはもう十分に強い。その強さを、自分自身へも向けてあげてください。"
+  },
+  {
+    id: 9, roman: "IX", nameJa: "隠者", nameEn: "THE HERMIT",
+    symbol: "🏮",
+    keyword: "内省・独り時間・探求",
+    text: "今日は一人の時間を大切にしてください。賑やかさから少し離れて、自分の内側を丁寧に見つめることで、大切な気づきが訪れます。答えはすでに、あなたの中にあります。",
+    advice: "灯籠は自分を照らしながら、道を照らします。あなたの探求が、周囲の光にもなります。"
+  },
+  {
+    id: 10, roman: "X", nameJa: "運命の輪", nameEn: "WHEEL OF FORTUNE",
+    symbol: "☸️",
+    keyword: "転換・流れ・タイミング",
+    text: "物事が動き始めています。今日はその流れに乗ることを意識してください。コントロールしようとし過ぎず、変化を恐れず受け入れることで、思わぬ好機が開きます。",
+    advice: "輪は必ず回ります。今どの位置にいても、それは次の場所への途中です。"
+  },
+  {
+    id: 11, roman: "XI", nameJa: "正義", nameEn: "JUSTICE",
+    symbol: "⚖️",
+    keyword: "公正・誠実・因果",
+    text: "今日は正直に、フェアに。誰かのせいにしたくなる気持ちがあるなら、自分の側の責任も静かに見つめてみてください。誠実さが、長い目で見て最善の道になります。",
+    advice: "天秤はどちらかを切り捨てません。両方を丁寧に見ることが、真の判断です。"
+  },
+  {
+    id: 12, roman: "XII", nameJa: "吊るされた男", nameEn: "THE HANGED MAN",
+    symbol: "🌊",
+    keyword: "視点の転換・手放す・待機",
+    text: "今日は「逆さまから見る」練習をしてみてください。当たり前だと思っていたことを疑い、違う角度から物事を眺めると、思わぬ発見があります。焦らず、今は待つ時です。",
+    advice: "手放すことは、失うことではありません。空いた手に、新しいものが届きます。"
+  },
+  {
+    id: 13, roman: "XIII", nameJa: "死神", nameEn: "DEATH",
+    symbol: "🍂",
+    keyword: "終わりと始まり・変容・手放し",
+    text: "何かが終わろうとしているなら、それを引き止めないでください。終わりは必ず新しい始まりへとつながっています。古いものを手放すことで、本当に必要なものが見えてきます。",
+    advice: "秋が葉を落とすのは、春の準備です。あなたにも、そんな季節が来ています。"
+  },
+  {
+    id: 14, roman: "XIV", nameJa: "節制", nameEn: "TEMPERANCE",
+    symbol: "🌿",
+    keyword: "調和・バランス・癒し",
+    text: "今日は「ちょうどよさ」を意識してください。急ぎすぎず、止まりすぎず。極端に振れそうな時ほど、中庸に戻る呼吸を忘れずに。心と体のバランスが整う日です。",
+    advice: "水は器に従いながら、常に流れ続けます。あなたの柔軟さが、調和を生みます。"
+  },
+  {
+    id: 15, roman: "XV", nameJa: "悪魔", nameEn: "THE DEVIL",
+    symbol: "🔗",
+    keyword: "束縛・執着・影の自己",
+    text: "今日は「自分を縛っているもの」を正直に見てみてください。恐れ、依存、思い込み。それに気づくことが、解放への第一歩です。鎖は思ったより、緩いかもしれません。",
+    advice: "影を見ることを恐れないで。影は光があるから生まれます。あなたには必ず光がある。"
+  },
+  {
+    id: 16, roman: "XVI", nameJa: "塔", nameEn: "THE TOWER",
+    symbol: "⛈️",
+    keyword: "崩壊・解放・突然の変化",
+    text: "突然の変化や崩れを感じているなら、それは必要な解体かもしれません。古くなった基盤を崩すことで、より本物の土台が作られます。嵐は必ず過ぎ去ります。",
+    advice: "崩れた後の更地にこそ、本当に建てたいものが建てられます。"
+  },
+  {
+    id: 17, roman: "XVII", nameJa: "星", nameEn: "THE STAR",
+    symbol: "⭐",
+    keyword: "希望・癒し・信頼",
+    text: "今日は希望を持っていい日です。暗い夜を過ごしてきたとしても、星はずっとそこにありました。自分を信じて、前を向いてください。静かな光が、道を照らしています。",
+    advice: "星は争わず、ただそこで輝きます。あなたらしくいることが、一番の光です。"
+  },
+  {
+    id: 18, roman: "XVIII", nameJa: "月", nameEn: "THE MOON",
+    symbol: "🌕",
+    keyword: "無意識・幻想・不安",
+    text: "今日は見えないものに惑わされやすい日。不安や恐れが浮かんでも、それが「現実」かどうか、一度立ち止まって確かめてみてください。夢と現実の境界が揺れる時ほど、直感を信じて。",
+    advice: "月は満ち欠けしても消えません。あなたの本質も、揺れながらもそこにあります。"
+  },
+  {
+    id: 19, roman: "XIX", nameJa: "太陽", nameEn: "THE SUN",
+    symbol: "☀️",
+    keyword: "喜び・活力・成功",
+    text: "今日は明るく、素直に喜んでください。うまくいっていることを、素直に認めていい日です。笑顔は伝染します。あなたの輝きが、周囲にも温かさをもたらします。",
+    advice: "太陽はすべてを等しく照らします。あなたの喜びも、惜しまず分け与えて。"
+  },
+  {
+    id: 20, roman: "XX", nameJa: "審判", nameEn: "JUDGEMENT",
+    symbol: "🎺",
+    keyword: "覚醒・赦し・新たな呼び声",
+    text: "今日は何かに「呼ばれている」感覚を大切にしてください。過去を赦し、自分を赦すことで、新しい段階へと進む準備が整います。目を覚ます時が来ています。",
+    advice: "あなたはすでに十分な経験を積んできました。次のステージへ進んでいい。"
+  },
+  {
+    id: 21, roman: "XXI", nameJa: "世界", nameEn: "THE WORLD",
+    symbol: "🌍",
+    keyword: "完成・達成・統合",
+    text: "今日は、ひとつの大きな流れが完結する予感があります。努力が実を結び、バラバラだったものが一つにまとまる感覚。感謝と共に、この完成を受け取ってください。",
+    advice: "旅の終わりは、次の旅の始まり。完成した今が、新しい出発点です。"
+  },
+
+  // ── ワンド（火・情熱・意志） ──
+  {
+    id: 22, roman: "Ace", nameJa: "ワンドのエース", nameEn: "ACE OF WANDS",
+    symbol: "🔥",
+    keyword: "創造の火・始動・情熱の種",
+    text: "今日、あなたの中で何かに火がつきます。それはアイデアかもしれないし、人との出会いかもしれない。どんな小さな火でも、今日は大切に育ててください。行動の最初の一歩が、大きな流れを生みます。",
+    advice: "火は燃え続けることで本物になります。今日の情熱を、明日へとつないで。"
+  },
+  {
+    id: 23, roman: "II", nameJa: "ワンドの2", nameEn: "TWO OF WANDS",
+    symbol: "🌐",
+    keyword: "展望・計画・次なる世界",
+    text: "今いる場所で安定しながら、もっと遠くを見つめる日。目の前の現実に満足しつつも、次のステージへの意志を静かに育てていいタイミングです。視野を広げてみてください。",
+    advice: "持っているものを大切にしながら、夢見ることは矛盾しません。"
+  },
+  {
+    id: 24, roman: "III", nameJa: "ワンドの3", nameEn: "THREE OF WANDS",
+    symbol: "⛵",
+    keyword: "出発・遠方・結果を待つ",
+    text: "準備は整いました。あとは流れに任せる時。種を蒔いたのなら、焦らず待ってください。遠くから良い知らせが届くかもしれません。今日は「待つこと」も立派な行動です。",
+    advice: "船は出た。あとは風を信じること。"
+  },
+  {
+    id: 25, roman: "IV", nameJa: "ワンドの4", nameEn: "FOUR OF WANDS",
+    symbol: "🎊",
+    keyword: "祝祭・安らぎ・節目の喜び",
+    text: "今日は小さなお祝いをしてください。何かひとつ、うまくいったことを認めて、自分を褒める日です。人と集まること、笑うことが吉。心地よい場所に身を置いてみて。",
+    advice: "完璧でなくても、ここまで来たことそのものが祝う理由になります。"
+  },
+  {
+    id: 26, roman: "V", nameJa: "ワンドの5", nameEn: "FIVE OF WANDS",
+    symbol: "⚡",
+    keyword: "競争・混乱・エネルギーの衝突",
+    text: "今日は意見のぶつかりや競争の気配がある日。でもこの摩擦は、あなたを鍛えるために必要なもの。焦らず、自分の軸を保ちながら場に向き合ってください。",
+    advice: "混乱の中にこそ、自分の本当の強さを知るチャンスがあります。"
+  },
+  {
+    id: 27, roman: "VI", nameJa: "ワンドの6", nameEn: "SIX OF WANDS",
+    symbol: "🏆",
+    keyword: "勝利・承認・堂々と前へ",
+    text: "努力が認められる日。人からの評価や称賛を、素直に受け取ってください。謙遜しすぎず、堂々と前に立つことが今日のあなたへのメッセージです。",
+    advice: "称賛を受け取ることも、一つの誠実さです。"
+  },
+  {
+    id: 28, roman: "VII", nameJa: "ワンドの7", nameEn: "SEVEN OF WANDS",
+    symbol: "🛡️",
+    keyword: "防衛・信念を守る・踏ん張り",
+    text: "今日は何かに対して「No」と言う力が必要かもしれません。周囲からの圧力や批判に対して、自分の立場や信念をしっかり守る日。孤独に感じても、あなたの側に理があります。",
+    advice: "高台に立つのは孤独ですが、そこからしか見えない景色があります。"
+  },
+  {
+    id: 29, roman: "VIII", nameJa: "ワンドの8", nameEn: "EIGHT OF WANDS",
+    symbol: "💫",
+    keyword: "スピード・急展開・一気に動く",
+    text: "今日は物事が一気に動き出す予感。メッセージや連絡、思わぬ展開が来るかもしれません。迷わずスピーディーに動くことが吉。チャンスは素早く掴んで。",
+    advice: "矢は放たれたら止まりません。あとは信じて飛ばすだけ。"
+  },
+  {
+    id: 30, roman: "IX", nameJa: "ワンドの9", nameEn: "NINE OF WANDS",
+    symbol: "🏹",
+    keyword: "粘り強さ・疲弊・もう少し",
+    text: "疲れを感じていても、もう少しだけ続けてみてください。今日のあなたはすでに多くを乗り越えてきた。その経験が、今のあなたを守っています。警戒しながらも、前を向いて。",
+    advice: "傷跡は弱さではなく、戦ってきた証です。"
+  },
+  {
+    id: 31, roman: "X", nameJa: "ワンドの10", nameEn: "TEN OF WANDS",
+    symbol: "🎒",
+    keyword: "重荷・責任過多・手放す勇気",
+    text: "今日は抱えすぎていないか確認してみてください。全部一人でやろうとしていませんか。誰かに任せることや、いくつかを手放すことが、今のあなたに必要な知恵かもしれません。",
+    advice: "荷物を降ろすことは、弱さではなく賢さです。"
+  },
+  {
+    id: 32, roman: "Page", nameJa: "ワンドのペイジ", nameEn: "PAGE OF WANDS",
+    symbol: "🌱",
+    keyword: "好奇心・冒険心・新しいメッセージ",
+    text: "今日は何かに純粋に興味を持つことが大切。知らないことを「知りたい」と思う気持ちが、新しい道を開きます。若々しいエネルギーで、軽やかに動いてみてください。",
+    advice: "始めたばかりの火は、風に揺れながらも燃え続けます。"
+  },
+  {
+    id: 33, roman: "Knight", nameJa: "ワンドのナイト", nameEn: "KNIGHT OF WANDS",
+    symbol: "🐎",
+    keyword: "情熱・突進・大胆な行動",
+    text: "今日は大胆に動く日。考えすぎず、感じたままに行動してみてください。少々無謀でも、情熱がある方向に進むことで道が開けます。スピードと熱量がキーワード。",
+    advice: "炎のように走ることが、今日のあなたに求められています。"
+  },
+  {
+    id: 34, roman: "Queen", nameJa: "ワンドのクイーン", nameEn: "QUEEN OF WANDS",
+    symbol: "🌻",
+    keyword: "自信・魅力・太陽のような存在感",
+    text: "今日のあなたは輝いています。自分らしさを堂々と表現してください。人を引きつける温かさと強さを持った日。社交的に動くことで、良い縁と機会が生まれます。",
+    advice: "あなたが笑顔でいることが、周囲への最大のギフトです。"
+  },
+  {
+    id: 35, roman: "King", nameJa: "ワンドのキング", nameEン: "KING OF WANDS",
+    symbol: "👑",
+    keyword: "リーダーシップ・ビジョン・統率",
+    text: "今日は大きな視点で物事を見る日。細かいことより、「どこへ向かうか」を意識してください。あなたのビジョンと情熱が、周囲を自然に動かします。",
+    advice: "王は命令ではなく、在り方で人を率います。"
+  },
+
+  // ── カップ（水・感情・関係） ──
+  {
+    id: 36, roman: "Ace", nameJa: "カップのエース", nameEn: "ACE OF CUPS",
+    symbol: "💧",
+    keyword: "愛の始まり・感情の開放・新しいつながり",
+    text: "心が開かれる日。新しい感情、新しい出会い、深い感動が訪れるかもしれません。受け取ることを恐れず、愛を素直に感じてください。今日の心の動きは、本物です。",
+    advice: "器が空だからこそ、水は満たされます。"
+  },
+  {
+    id: 37, roman: "II", nameJa: "カップの2", nameEn: "TWO OF CUPS",
+    symbol: "🤝",
+    keyword: "相互理解・調和・深いつながり",
+    text: "今日は誰かと心が通じ合う瞬間がありそうです。恋愛でも友情でも、お互いを認め合う関係が育まれる日。素直な気持ちを伝えることで、絆が深まります。",
+    advice: "向き合うことで、二つの心はひとつになれます。"
+  },
+  {
+    id: 38, roman: "III", nameJa: "カップの3", nameEn: "THREE OF CUPS",
+    symbol: "🥂",
+    keyword: "祝い・友情・喜びを分かち合う",
+    text: "今日は人と集まることに意味があります。お祝いや楽しい集まりが吉。喜びは分かち合うことで倍になります。誰かを誘ったり、誰かの輪に入ったりしてみてください。",
+    advice: "喜びは一人で抱えるより、広げる方が美しい。"
+  },
+  {
+    id: 39, roman: "IV", nameJa: "カップの4", nameEn: "FOUR OF CUPS",
+    symbol: "🍃",
+    keyword: "内省・倦怠・見落としている贈り物",
+    text: "今日は少し気力が湧かない感じがあるかもしれません。でも、見落としているチャンスや感情がそこにあります。少しだけ目を開いて、周りを見渡してみてください。",
+    advice: "差し出された杯に、気づいていないだけかもしれません。"
+  },
+  {
+    id: 40, roman: "V", nameJa: "カップの5", nameEn: "FIVE OF CUPS",
+    symbol: "🌧️",
+    keyword: "悲しみ・後悔・残るものへの気づき",
+    text: "失ったものを悲しむのは自然なこと。でも今日は、まだ残っているものにも目を向けてみてください。全部がなくなったわけではない。悲しみの中にも、希望の種があります。",
+    advice: "こぼれた水は惜しまず、残った水を大切に。"
+  },
+  {
+    id: 41, roman: "VI", nameJa: "カップの6", nameEn: "SIX OF CUPS",
+    symbol: "🌼",
+    keyword: "懐かしさ・純粋さ・過去からの贈り物",
+    text: "今日は懐かしい人や記憶が心に浮かぶかもしれません。過去の優しさや純粋な気持ちを思い出すことで、今の自分に大切なものが見えてきます。子供の頃の自分を労ってあげて。",
+    advice: "原点に戻ることは、後退ではなく充電です。"
+  },
+  {
+    id: 42, roman: "VII", nameJa: "カップの7", nameEn: "SEVEN OF CUPS",
+    symbol: "🌀",
+    keyword: "幻想・選択肢の多さ・夢と現実",
+    text: "今日は夢や空想が膨らみやすい日。でも、全部が現実になるわけではありません。魅力的な選択肢が並んでいるなら、一つだけ選ぶ勇気を。迷いすぎると、どれも手に入りません。",
+    advice: "霧の中でも、一歩踏み出す方向を決めることができます。"
+  },
+  {
+    id: 43, roman: "VIII", nameJa: "カップの8", nameEn: "EIGHT OF CUPS",
+    symbol: "🌊",
+    keyword: "手放す・去る決断・より深いものへ",
+    text: "今日は、何かを静かに手放す日かもしれません。今の場所や関係に満足しながらも、もっと本質的なものを求めて歩き出す時。この離れは逃げではなく、成熟の証です。",
+    advice: "満たされたものを手放すことが、真の豊かさへの道になることがあります。"
+  },
+  {
+    id: 44, roman: "IX", nameJa: "カップの9", nameEn: "NINE OF CUPS",
+    symbol: "✨",
+    keyword: "満足・願い事・豊かさの実感",
+    text: "今日は「足るを知る」日。すでにあなたの周りには、たくさんの豊かさがあります。それに気づくことが、さらなる幸福を引き寄せます。願い事が叶いやすい日でもあります。",
+    advice: "幸せは遠くにあるのではなく、今ここにある気づきの中に。"
+  },
+  {
+    id: 45, roman: "X", nameJa: "カップの10", nameEn: "TEN OF CUPS",
+    symbol: "🌈",
+    keyword: "家族・円満・感情の完成",
+    text: "今日は大切な人との時間を優先してください。家族や友人との温かなひとときが、心に深い充足感をもたらします。争わず、共にいることの幸せを感じる日。",
+    advice: "虹は嵐の後に現れます。今日のあなたには、その虹が見えています。"
+  },
+  {
+    id: 46, roman: "Page", nameJa: "カップのペイジ", nameEn: "PAGE OF CUPS",
+    symbol: "🐟",
+    keyword: "直感・夢・感受性の高まり",
+    text: "今日は論理より感性を信じてみてください。不思議な直感、夢のようなアイデア、ふとした感動。それらが大切なメッセージを運んでいます。心の声に耳を傾けて。",
+    advice: "魚が水から飛び出すように、予想外の場所から答えが来ることがあります。"
+  },
+  {
+    id: 47, roman: "Knight", nameJa: "カップのナイト", nameEn: "KNIGHT OF CUPS",
+    symbol: "🦢",
+    keyword: "ロマンス・理想の追求・感情の動き",
+    text: "今日は心の赴くままに動く日。ロマンティックな出来事や、理想を追いかけることが吉。感情を大切にしながら、美しいと思うものへ真っ直ぐに向かってみてください。",
+    advice: "感情は羅針盤です。その揺れを無視せず、従ってみて。"
+  },
+  {
+    id: 48, roman: "Queen", nameJa: "カップのクイーン", nameEn: "QUEEN OF CUPS",
+    symbol: "🌊",
+    keyword: "共感・直感・深い愛情",
+    text: "今日はあなたの共感力と直感が冴えています。人の気持ちを深く感じ取り、寄り添うことができる日。自分の感情も大切にしながら、周囲への愛情を表現してみてください。",
+    advice: "深い水は静かです。あなたの愛情も、静かに深く流れています。"
+  },
+  {
+    id: 49, roman: "King", nameJa: "カップのキング", nameEn: "KING OF CUPS",
+    symbol: "🌊",
+    keyword: "感情の成熟・寛容・穏やかな強さ",
+    text: "今日は感情を揺らさず、穏やかに対応できる日。誰かが感情的になっていても、あなたは落ち着いた海のように受け止めてあげてください。その器の大きさが、信頼を生みます。",
+    advice: "嵐の海を治めるのは、もっと大きな静けさです。"
+  },
+
+  // ── ソード（風・思考・葛藤） ──
+  {
+    id: 50, roman: "Ace", nameJa: "ソードのエース", nameEn: "ACE OF SWORDS",
+    symbol: "⚔️",
+    keyword: "真実・明晰さ・新しい思考",
+    text: "今日は物事をはっきりさせる日。曖昧にしてきたことに、明確な言葉と判断を与えてください。真実を見極める力が高まっています。正直であることが、最も強い武器です。",
+    advice: "剣は両刃。真実は時に痛みを伴うが、それが本当の自由への道です。"
+  },
+  {
+    id: 51, roman: "II", nameJa: "ソードの2", nameEn: "TWO OF SWORDS",
+    symbol: "🙈",
+    keyword: "決断の保留・膠着・目を向けない",
+    text: "今日は決断を迫られているのに、目をつぶっていませんか。どちらの選択も怖くて動けない状態かもしれません。でも、いつかは向き合う必要があります。小さな一歩だけでも踏み出してみて。",
+    advice: "目を開けることが、すでに勇気の第一歩です。"
+  },
+  {
+    id: 52, roman: "III", nameJa: "ソードの3", nameEn: "THREE OF SWORDS",
+    symbol: "💔",
+    keyword: "悲しみ・痛み・心の傷",
+    text: "今日は胸が痛む出来事や、悲しみが浮かび上がるかもしれません。その痛みを否定せず、ただ感じてください。泣いていい。悲しんでいい。それが癒しの始まりです。",
+    advice: "心に刺さった剣は、向き合うことでしか抜けません。"
+  },
+  {
+    id: 53, roman: "IV", nameJa: "ソードの4", nameEn: "FOUR OF SWORDS",
+    symbol: "🛌",
+    keyword: "休養・静養・立ち止まる",
+    text: "今日は休んでください。無理に動こうとせず、心と体を回復させることが最優先です。ゆっくり眠り、静かに過ごすことが、次のステップへの大切な準備になります。",
+    advice: "剣を収める者だけが、次の戦いに備えられます。"
+  },
+  {
+    id: 54, roman: "V", nameJa: "ソードの5", nameEn: "FIVE OF SWORDS",
+    symbol: "🌪️",
+    keyword: "葛藤・敗北・引き際の判断",
+    text: "今日は勝ち負けにこだわりすぎないよう注意してください。勝ったとしても、失うものがある戦いもあります。時には引くことが、賢い選択です。プライドより、関係を大切に。",
+    advice: "本当の勝利は、相手を負かすことではなく、自分に正直であることです。"
+  },
+  {
+    id: 55, roman: "VI", nameJa: "ソードの6", nameEn: "SIX OF SWORDS",
+    symbol: "⛵",
+    keyword: "移行・回復・穏やかな前進",
+    text: "嵐のような時期を過ぎ、少しずつ穏やかな水面へと移っています。完全には癒えていなくても、前に進むことができています。今日は焦らず、ゆっくりと移行してください。",
+    advice: "荒れた海から離れること自体が、すでに回復の始まりです。"
+  },
+  {
+    id: 56, roman: "VII", nameJa: "ソードの7", nameEn: "SEVEN OF SWORDS",
+    symbol: "🦊",
+    keyword: "策略・回避・一人でやろうとする",
+    text: "今日は正面突破より、賢く立ち回ることが有効かもしれません。ただし、誰かを傷つける形での「逃げ」には気をつけて。また、自分一人で抱え込みすぎていないかも確認を。",
+    advice: "賢さと誠実さは、両立できます。"
+  },
+  {
+    id: 57, roman: "VIII", nameJa: "ソードの8", nameEn: "EIGHT OF SWORDS",
+    symbol: "🕸️",
+    keyword: "自縛・思い込み・見えない自由",
+    text: "今日感じている制限や不自由さは、実は自分の思い込みが作り出しているかもしれません。少し視点を変えてみると、意外と出口があることに気づくでしょう。",
+    advice: "目隠しを外すのは、あなた自身の手でできます。"
+  },
+  {
+    id: 58, roman: "IX", nameJa: "ソードの9", nameEn: "NINE OF SWORDS",
+    symbol: "😰",
+    keyword: "不安・夜の恐怖・心配しすぎ",
+    text: "今日は不安や心配が頭を占領しているかもしれません。でも、恐れているほとんどのことは現実にはなりません。今この瞬間、あなたは安全です。深呼吸して、夜が明けるのを待ってください。",
+    advice: "夜中の3時の不安は、昼間の光の中では小さく見えます。"
+  },
+  {
+    id: 59, roman: "X", nameJa: "ソードの10", nameEn: "TEN OF SWORDS",
+    symbol: "🌅",
+    keyword: "終焉・解放・夜明けの始まり",
+    text: "最悪の時期が終わろうとしています。これ以上悪くなりようがないほど底に達したなら、あとは上がるだけ。今日は「終わり」を受け入れることで、新しい夜明けが来ます。",
+    advice: "太陽は必ず昇ります。今は地平線を信じて。"
+  },
+  {
+    id: 60, roman: "Page", nameJa: "ソードのペイジ", nameEn: "PAGE OF SWORDS",
+    symbol: "🗡️",
+    keyword: "好奇心・鋭い観察・情報収集",
+    text: "今日は情報や知識を積極的に集める日。鋭い観察眼で周囲を見渡してみてください。SNSや話し合いの中に、重要なヒントが隠れているかもしれません。ただし、早合点には注意。",
+    advice: "見ること、聞くこと、考えること。今日はその全てが武器になります。"
+  },
+  {
+    id: 61, roman: "Knight", nameJa: "ソードのナイト", nameEn: "KNIGHT OF SWORDS",
+    symbol: "💨",
+    keyword: "スピード・明快さ・直進する思考",
+    text: "今日は迷いなく突き進む日。頭が冴えており、判断が速く正確です。ただし、人の気持ちを置き去りにしないよう注意して。正しいことを、丁寧に伝えることも大切です。",
+    advice: "風は真っ直ぐ吹く。でも強すぎると、花を散らしてしまいます。"
+  },
+  {
+    id: 62, roman: "Queen", nameJa: "ソードのクイーン", nameEn: "QUEEN OF SWORDS",
+    symbol: "🌙",
+    keyword: "知性・独立・明晰な判断",
+    text: "今日は感情に流されず、冷静に物事を判断する力が高まっています。人の意見に左右されず、自分の頭で考えてください。鋭さの中に温かさもあることを忘れずに。",
+    advice: "剣を持ちながら、風を切る姿に美しさがあります。"
+  },
+  {
+    id: 63, roman: "King", nameJa: "ソードのキング", nameEn: "KING OF SWORDS",
+    symbol: "⚖️",
+    keyword: "権威・公正・明確な意思決定",
+    text: "今日は毅然とした態度で、公正な判断を下す日。感情より原則を優先させ、明確な意思表示をすることが周囲への責任です。権力は、人のために使うもの。",
+    advice: "正義は感情ではなく、原則の上に立ちます。"
+  },
+
+  // ── コイン（地・現実・物質） ──
+  {
+    id: 64, roman: "Ace", nameJa: "コインのエース", nameEn: "ACE OF COINS",
+    symbol: "🌱",
+    keyword: "物質的な始まり・豊かさの種・実りの予感",
+    text: "今日は現実的な豊かさへの扉が開きます。新しい仕事、収入、健康的な習慣の始まり。地に足のついた行動が、確かな実りにつながります。小さなことから丁寧に。",
+    advice: "種は土の中でゆっくり根を張ります。今日の行動が、未来の実りです。"
+  },
+  {
+    id: 65, roman: "II", nameJa: "コインの2", nameEn: "TWO OF COINS",
+    symbol: "🔄",
+    keyword: "バランス・変化への適応・柔軟さ",
+    text: "今日は複数のことを同時にこなす必要がありそうです。上手にバランスを取りながら、変化に柔軟に対応してください。一つのことに固執しすぎず、流れに合わせて動いて。",
+    advice: "波に乗ることと、波に飲まれることは違います。"
+  },
+  {
+    id: 66, roman: "III", nameJa: "コインの3", nameEn: "THREE OF COINS",
+    symbol: "🔨",
+    keyword: "協力・技術・着実な仕事",
+    text: "今日はチームや仲間と力を合わせることで、より良い結果が生まれます。一人でやるより、得意なことを持ち寄る方が賢い日。自分の技術や専門性を活かしてください。",
+    advice: "職人の誇りは、仕事そのものの中にあります。"
+  },
+  {
+    id: 67, roman: "IV", nameJa: "コインの4", nameEn: "FOUR OF COINS",
+    symbol: "🤲",
+    keyword: "保守・執着・安定への固執",
+    text: "今日は「守ること」と「しがみつくこと」の違いを意識してみてください。安心は大切ですが、握りしめすぎると新しいものが入ってきません。少しだけ、手を開いてみて。",
+    advice: "豊かさは、循環することで育まれます。"
+  },
+  {
+    id: 68, roman: "V", nameJa: "コインの5", nameEn: "FIVE OF COINS",
+    symbol: "❄️",
+    keyword: "困窮・孤立・助けを求める",
+    text: "今日は困難や不足感を感じるかもしれません。でも、扉はすぐそこにあります。一人で抱え込まず、助けを求めてください。誰かの手が差し伸べられるのを待っています。",
+    advice: "扉を叩く勇気が、最初の一歩です。"
+  },
+  {
+    id: 69, roman: "VI", nameJa: "コインの6", nameEn: "SIX OF COINS",
+    symbol: "🎁",
+    keyword: "与える・受け取る・バランスある豊かさ",
+    text: "今日は与えることと受け取ることのバランスを大切に。誰かに親切にする機会があるなら惜しまずに。また、誰かの好意を素直に受け取ることも同じくらい大切です。",
+    advice: "豊かさは循環します。与えた分だけ、戻ってきます。"
+  },
+  {
+    id: 70, roman: "VII", nameJa: "コインの7", nameEn: "SEVEN OF COINS",
+    symbol: "🌿",
+    keyword: "待つ・投資・育てる時間",
+    text: "今日は結果を急がないでください。種を蒔いた後は、育つのを待つ時間が必要です。焦らず、今できる手入れをするだけ。その忍耐が、大きな実りにつながります。",
+    advice: "農夫は収穫を急ぎません。土と種と時間を信じます。"
+  },
+  {
+    id: 71, roman: "VIII", nameJa: "コインの8", nameEn: "EIGHT OF COINS",
+    symbol: "🔧",
+    keyword: "修練・集中・コツコツ続ける",
+    text: "今日は目の前の仕事や学びに集中する日。大きなことより、小さなことを丁寧に繰り返すことが力になります。地道な積み重ねが、やがて本物の技術になります。",
+    advice: "一つの道を深く掘ることで、やがて泉に辿り着きます。"
+  },
+  {
+    id: 72, roman: "IX", nameJa: "コインの9", nameEn: "NINE OF COINS",
+    symbol: "🌺",
+    keyword: "自立・豊かさ・自分自身の力",
+    text: "今日は自分の力で築いてきたものを、ゆっくり味わってください。誰かに頼るより、自分自身の内なる豊かさを感じる日。あなたはすでに、多くのものを持っています。",
+    advice: "一人で立てる木が、最も大きな実を結ぶことがあります。"
+  },
+  {
+    id: 73, roman: "X", nameJa: "コインの10", nameEn: "TEN OF COINS",
+    symbol: "🏡",
+    keyword: "完成・家族・世代を超えた豊かさ",
+    text: "今日は大切な人や家族との時間を過ごすことが吉。物質的な豊かさだけでなく、受け継がれてきたものや伝統の中に、今日のあなたへのメッセージがあります。",
+    advice: "本当の豊かさは、次の世代に渡せるものの中にあります。"
+  },
+  {
+    id: 74, roman: "Page", nameJa: "コインのペイジ", nameEn: "PAGE OF COINS",
+    symbol: "📚",
+    keyword: "学び・現実的な第一歩・可能性の種",
+    text: "今日は新しいことを学ぶ絶好の日。知識やスキルを地道に積み上げることが、将来の確かな豊かさになります。小さなことでも丁寧に。好奇心と勤勉さが今日の合言葉。",
+    advice: "学ぶ姿勢がある限り、どんな年齢でも成長できます。"
+  },
+  {
+    id: 75, roman: "Knight", nameJa: "コインのナイト", nameEn: "KNIGHT OF COINS",
+    symbol: "🐂",
+    keyword: "着実・忍耐・信頼できる行動",
+    text: "今日は派手さより、確かさを選んでください。焦らず、一歩一歩確実に進むことが成果につながります。地味に見えても、継続することが最大の力です。",
+    advice: "牛は遅くとも、必ず目的地に辿り着きます。"
+  },
+  {
+    id: 76, roman: "Queen", nameJa: "コインのクイーン", nameEn: "QUEEN OF COINS",
+    symbol: "🌿",
+    keyword: "豊かさ・実用的な愛・大地の母",
+    text: "今日は周囲を実際的に助けることができる日。感情だけでなく、具体的な行動で人を支える力があります。身体を動かして、料理や手仕事など「作ること」が特に吉。",
+    advice: "大地が万物を育てるように、あなたの温かさが人を育てます。"
+  },
+  {
+    id: 77, roman: "King", nameJa: "コインのキング", nameEn: "KING OF COINS",
+    symbol: "🏔️",
+    keyword: "成熟・安定・現実の中の知恵",
+    text: "今日は長期的な視点で物事を判断する日。目先の利益より、将来に渡って価値あるものを選んでください。経験から来る安定した判断力が、今日の最大の武器です。",
+    advice: "山は動かない。その動じない安定さが、周囲の安心になります。"
+  }
+];
+
+let shuffled = false;
+let deck = [];
+
+function startShuffle() {
+  if (shuffled) {
+    goToSpread();
+    return;
+  }
+  const deckVisual = document.getElementById('deckVisual');
+  const btn = document.getElementById('shuffleBtn');
+  const msg = document.getElementById('shuffledMsg');
+  btn.disabled = true;
+  deckVisual.classList.add('shuffling');
+
+  setTimeout(() => {
+    deckVisual.classList.remove('shuffling');
+    shuffled = true;
+    deck = [...TAROT].sort(() => Math.random() - 0.5);
+    msg.textContent = '✦ シャッフルされました ✦';
+    btn.textContent = 'カードを広げる';
+    btn.disabled = false;
+  }, 1800);
+}
+
+function goToSpread() {
+  document.getElementById('screen-shuffle').style.display = 'none';
+  const spread = document.getElementById('screen-spread');
+  spread.style.display = 'block';
+  spread.classList.add('fade-in');
+
+  const fan = document.getElementById('cardsFan');
+  fan.innerHTML = '';
+  deck.forEach((card, i) => {
+    const el = document.createElement('div');
+    el.className = 'fan-card';
+    el.style.animationDelay = (i * 0.03) + 's';
+    el.addEventListener('click', () => selectCard(card, el));
+    fan.appendChild(el);
+  });
+}
+
+function selectCard(card, el) {
+  el.classList.add('selected');
+  setTimeout(() => showResult(card), 300);
+}
+
+function showResult(card) {
+  document.getElementById('screen-spread').style.display = 'none';
+  const result = document.getElementById('screen-result');
+  result.style.display = 'block';
+  result.classList.add('fade-in');
+
+  // カード表面を設定
+  document.getElementById('resultCardFront').innerHTML = `
+    <div class="card-symbol">${card.symbol}</div>
+    <div class="card-roman">${card.roman}</div>
+    <div class="card-name-ja">${card.nameJa}</div>
+    <div class="card-name-en">${card.nameEn}</div>
+  `;
+
+  document.getElementById('readingKeyword').textContent = card.keyword;
+  document.getElementById('readingText').textContent = card.text;
+  document.getElementById('readingAdvice').textContent = card.advice;
+
+  // カードをフリップ
+  setTimeout(() => {
+    document.getElementById('resultCardInner').classList.add('flipped');
+  }, 400);
+
+  // 解説フェードイン
+  setTimeout(() => {
+    document.getElementById('cardReading').classList.add('visible');
+  }, 1200);
+
+  setTimeout(() => {
+    document.getElementById('againBtn').classList.add('visible');
+  }, 1800);
+}
+
+function resetAll() {
+  shuffled = false;
+  deck = [];
+  document.getElementById('screen-result').style.display = 'none';
+  document.getElementById('screen-result').classList.remove('fade-in');
+  document.getElementById('cardReading').classList.remove('visible');
+  document.getElementById('againBtn').classList.remove('visible');
+  document.getElementById('resultCardInner').classList.remove('flipped');
+  document.getElementById('screen-shuffle').style.display = 'block';
+  document.getElementById('shuffleBtn').textContent = 'カードをシャッフルする';
+  document.getElementById('shuffleBtn').disabled = false;
+  document.getElementById('shuffledMsg').textContent = '';
+}
+</script>
+</body>
+</html>
